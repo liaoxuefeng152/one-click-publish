@@ -1,0 +1,59 @@
+# Ignore version control
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Dependencies (installed in Docker)
+node_modules
+
+# Build outputs
+.next
+dist
+out
+
+# Environment files (keep example)
+.env
+.env.local
+.env.*.local
+
+# Docker files
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Test
+coverage
+*.test.js
+*.spec.js
+__tests__
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Misc
+*.ico
+*.7z
+*.tar
+*.gz
+*.zip

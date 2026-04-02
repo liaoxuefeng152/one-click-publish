@@ -1,0 +1,91 @@
+# ============================================
+# Link2Global - Docker Compose 配置
+# 支持开发环境和生产环境部署
+# ============================================
+
+services:
+  # 应用服务
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: link2global-app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      # 数据库
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/link2global
+      # 应用配置
+      - NODE_ENV=production
+      - PORT=5000
+      # LLM API
+      - COZE_API_KEY=${COZE_API_KEY}
+      # 对象存储
+      - COZE_BUCKET_ENDPOINT_URL=${COZE_BUCKET_ENDPOINT_URL}
+      - COZE_BUCKET_NAME=${COZE_BUCKET_NAME}
+      # TikTok Shop API
+      - TIKTOK_APP_ID=${TIKTOK_APP_ID}
+      - TIKTOK_APP_SECRET=${TIKTOK_APP_SECRET}
+      # Shopee API
+      - SHOPEE_PARTNER_ID=${SHOPEE_PARTNER_ID}
+      - SHOPEE_PARTNER_KEY=${SHOPEE_PARTNER_KEY}
+      # 项目域名
+      - COZE_PROJECT_DOMAIN_DEFAULT=${COZE_PROJECT_DOMAIN_DEFAULT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - link2global-network
+    volumes:
+      # 持久化上传文件
+      - app-data:/app/data
+
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:16-alpine
+    container_name: link2global-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=link2global
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - link2global-network
+
+  # 可选: pgAdmin 数据库管理
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: link2global-pgadmin
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@link2global.com
+      - PGADMIN_DEFAULT_PASSWORD=admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - link2global-network
+    profiles:
+      - debug
+
+networks:
+  link2global-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local
+  app-data:
+    driver: local
